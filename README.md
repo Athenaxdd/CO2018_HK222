@@ -5,13 +5,13 @@ CO2018 - Simple Operating System Assignment, including:
 - Synchronization
 - Report
 
-##How to work within the repository 
--Clone the project [from here](https://github.com/Athenaxdd/CO2018_HK222): 
+## How to work within the repository 
+- Clone the project [from here](https://github.com/Athenaxdd/CO2018_HK222): 
 
   git clone https://github.com/Athenaxdd/CO2018_HK222
   
   
--Commit the changes: 
+- Commit the changes: 
   > git add .
 
   > git commit -m "Your Message"
