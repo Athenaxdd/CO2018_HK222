@@ -5,6 +5,8 @@ CO2018 - Simple Operating System Assignment, including:
 - Synchronization
 - Report
 
+Current LaTeX report [here](https://www.overleaf.com/read/vkgmzcqgtvbz)
+
 ## How to work within the repository 
 - Clone the project [from here](https://github.com/Athenaxdd/CO2018_HK222): 
 
@@ -21,4 +23,4 @@ CO2018 - Simple Operating System Assignment, including:
   
   > Or use Github Desktop app
   
-- [Current LaTeX report](https://www.overleaf.com/read/vkgmzcqgtvbz)
+
