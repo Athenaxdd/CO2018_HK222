@@ -21,3 +21,4 @@ CO2018 - Simple Operating System Assignment, including:
   
   > Or use Github Desktop app
   
+- [Current LaTeX report](https://www.overleaf.com/read/vkgmzcqgtvbz)
