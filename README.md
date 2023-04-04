@@ -10,7 +10,6 @@ CO2018 - Simple Operating System Assignment, including:
 
   git clone https://github.com/Athenaxdd/CO2018_HK222
   
-  
 - Commit the changes: 
   > git add .
 
