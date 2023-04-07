@@ -10,7 +10,7 @@ Current LaTeX report [here](https://www.overleaf.com/read/vkgmzcqgtvbz)
 ## How to work within the repository 
 - Clone the project [from here](https://github.com/Athenaxdd/CO2018_HK222): 
 
-  git clone https://github.com/Athenaxdd/CO2018_HK222
+  > Or type this in the terminal: git clone https://github.com/Athenaxdd/CO2018_HK222
   
 - Commit the changes: 
   > git add .
