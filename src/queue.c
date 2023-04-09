@@ -6,7 +6,7 @@ int empty(struct queue_t * q) {
 	return (q->size == 0);
 }
 
-bool full (struct queue_t *q) {
+int full (struct queue_t *q) {
 	return (q -> size == MAX_QUEUE_SIZE);
 }
 
