@@ -7,7 +7,7 @@ int empty(struct queue_t * q) {
 }
 
 int full (struct queue_t *q) {
-	return (q -> size == MAX_QUEUE_SIZE);
+	return (q -> size >= MAX_QUEUE_SIZE);
 }
 
 void enqueue(struct queue_t * q, struct pcb_t * proc) {
