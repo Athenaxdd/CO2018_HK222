@@ -13,10 +13,6 @@ int full (struct queue_t *q) {
 void enqueue(struct queue_t * q, struct pcb_t * proc) {
 	/* TODO: put a new process to queue [q] */
 	int i;
-	if (full(q)){
-    		printf("Queue Overflow");
-    		exit(1);
-    	}
     for(i = 0; i < q->size; i++){
         if(q->proc[i]->prio < proc->prio){
             int j;
@@ -24,12 +20,13 @@ void enqueue(struct queue_t * q, struct pcb_t * proc) {
                 q->proc[j] = q->proc[j-1];
             }
             q->proc[i] = proc;
-            q->size++;
+            q->size = (q->size)+1;
             return;
         }
     }
     q->proc[q->size] = proc;
-    q->size++;
+	q->size = (q->size)+1;
+  return;
 }
 
 struct pcb_t * dequeue(struct queue_t * q) {
