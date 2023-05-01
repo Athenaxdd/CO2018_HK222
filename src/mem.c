@@ -141,34 +141,30 @@ addr_t alloc_mem(uint32_t size, struct pcb_t * proc) {
 		 * 	  valid. */
 
 		// Update _mem_stat by updating proc, index, next and adding entries to segment table and page tables
-		int i = 0;
-		int j = 0;
-		int k = 0;
 		int count = 0;
-		while(count < num_pages){
+		for(int i = 0; i < NUM_PAGES; i++){
 			if(_mem_stat[i].proc == 0){
 				_mem_stat[i].proc = proc->pid;
-				_mem_stat[i].index = j;
-				_mem_stat[i].next = k;
-				// Add entries to segment table and page tables
-				if(j == 0){
-					proc->page_table->table[proc->page_table->size].v_index = i;
-					proc->page_table->table[proc->page_table->size].next_lv = i;
-					proc->page_table->size++;
-				}
-				else{
-					proc->page_table->table[proc->page_table->size].v_index = i;
-					proc->page_table->table[proc->page_table->size].next_lv = i;
-					proc->page_table->size++;
-				}
+				_mem_stat[i].index = count;
+				_mem_stat[i].next = NULL;
 				count++;
-				j++;
-				k++;
+				if(count == num_pages)
+					break;
 			}
-			else{
-				j++;
+		}
+		// Add entries to segment table and page tables
+		addr_t first_lv = get_first_lv(ret_mem);
+		addr_t second_lv = get_second_lv(ret_mem);
+		addr_t physical_addr = 0;
+		for(int i = 0; i < num_pages; i++){
+			translate(ret_mem, &physical_addr, proc);
+			add_page_table_entry(proc->page_table, first_lv, second_lv, physical_addr);
+			ret_mem += PAGE_SIZE;
+			second_lv++;
+			if(second_lv == 256){
+				first_lv++;
+				second_lv = 0;
 			}
-			i++;
 		}
 	}
 	pthread_mutex_unlock(&mem_lock);
