@@ -98,7 +98,24 @@ static int translate(
 	}
 	return 0;	
 }
+void add_page_table_entry(
+		addr_t v_index, 	// Virtual index
+		addr_t p_index, 	// Physical index
+		struct page_table_t * page_table) { // Page table to add entry
+		//add page table entry
+		int i;
+		for (i = 0; i < page_table->size; i++) {
+			if (page_table->table[i].v_index == 0) {
+				page_table->table[i].v_index = v_index;
+				page_table->table[i].next_lv = p_index;
+				return;
+			}
+		}
+		page_table->table[page_table->size].v_index = v_index;
+		page_table->table[page_table->size].next_lv = p_index;
+		page_table->size++;
 
+}
 addr_t alloc_mem(uint32_t size, struct pcb_t * proc) {
 	pthread_mutex_lock(&mem_lock);
 	addr_t ret_mem = 0;
@@ -158,7 +175,7 @@ addr_t alloc_mem(uint32_t size, struct pcb_t * proc) {
 		addr_t physical_addr = 0;
 		for(int i = 0; i < num_pages; i++){
 			translate(ret_mem, &physical_addr, proc);
-			add_page_table_entry(proc->page_table, first_lv, second_lv, physical_addr);
+			add_page_table_entry(second_lv, physical_addr, proc->page_table);
 			ret_mem += PAGE_SIZE;
 			second_lv++;
 			if(second_lv == 256){
