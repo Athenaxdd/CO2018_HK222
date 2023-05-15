@@ -1,14 +1,13 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#ifndef COMMON_H
 #include "common.h"
-#endif
 
 #ifndef MLQ_SCHED
 #define MLQ_SCHED
-#define MAX_PRIO 140
 #endif
+
+#define MAX_PRIO 139
 
 int queue_empty(void);
 
