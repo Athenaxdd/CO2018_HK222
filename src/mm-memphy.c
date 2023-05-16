@@ -1,10 +1,11 @@
-#ifdef MM_PAGING
+
 /*
  * PAGING based Memory Management
  * Memory physical module mm/mm-memphy.c
  */
 
 #include "mm.h"
+#ifdef MM_PAGING
 #include <stdlib.h>
 #include<stdio.h>
 

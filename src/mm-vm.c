@@ -1,4 +1,5 @@
-//#ifdef MM_PAGING
+#include "os-mm.h"
+#ifdef MM_PAGING
 /*
  * PAGING based Memory Management
  * Virtual memory module mm/mm-vm.c
@@ -93,27 +94,32 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
 
   /* TODO get_free_vmrg_area FAILED handle the region management (Fig.6)*/
 
-
   /*Attempt to increase limit to get space */
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
+
   int inc_sz = PAGING_PAGE_ALIGNSZ(size);
-  //int inc_limit_ret
+  
   int old_sbrk ;
-
-  old_sbrk = cur_vma->sbrk;
-
+  
   /* TODO INCREASE THE LIMIT
    * inc_vma_limit(caller, vmaid, inc_sz)
    */
-  inc_vma_limit(caller, vmaid, inc_sz);
-
-  /*Successful increase limit */
-  caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
-  caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
-
-  *alloc_addr = old_sbrk;
   
-  return 0;
+  int inc_limit_ret = inc_vma_limit(caller, vmaid, inc_sz);
+
+  if(inc_limit_ret != 0){
+    return -1;
+  } 
+  else{
+    /*Successful increase limit */
+    old_sbrk = cur_vma->sbrk;
+    caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
+    caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
+
+    *alloc_addr = old_sbrk;
+    
+    return 0;
+  }
 }
 
 /*__free - remove a region memory
@@ -131,12 +137,30 @@ int __free(struct pcb_t *caller, int vmaid, int rgid)
     return -1;
 
   /* TODO: Manage the collect freed region to freerg_list */
+
   rgnode.rg_start = caller->mm->symrgtbl[rgid].rg_start;
   rgnode.rg_end = caller->mm->symrgtbl[rgid].rg_end;
 
+
   /*enlist the obsoleted memory region */
   enlist_vm_freerg_list(caller->mm, &rgnode);
-
+  /*clear the region in the symbol table*/
+  caller->mm->symrgtbl[rgid].rg_start = 0;
+  caller->mm->symrgtbl[rgid].rg_end = 0;
+  /*merge adjacent free regions*/
+  struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
+  struct vm_rg_struct *rg_s,*rg_e;
+  struct vm_rg_struct *free_list = cur_vma->vm_freerg_list;
+  for(rg_s = free_list; rg_s != NULL; rg_s = rg_s->rg_next)
+  {
+    rg_e = rg_s->rg_next;
+    if(rg_e != NULL && rg_s->rg_end == rg_e->rg_start){
+      rg_s->rg_end = rg_e->rg_end;
+      rg_s->rg_next = rg_e->rg_next;
+      free(rg_e);
+    }
+  }
+  
   return 0;
 }
 
@@ -147,10 +171,10 @@ int __free(struct pcb_t *caller, int vmaid, int rgid)
  */
 int pgalloc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 {
-  int addr;
+  int *addr;
 
   /* By default using vmaid = 0 */
-  return __alloc(proc, 0, reg_index, size, &addr);
+  return __alloc(proc, 0, reg_index, size, addr);
 }
 
 /*pgfree - PAGING-based free a region memory
@@ -532,4 +556,4 @@ int get_free_vmrg_area(struct pcb_t *caller, int vmaid, int size, struct vm_rg_s
  return 0;
 }
 
-//#endif
+#endif

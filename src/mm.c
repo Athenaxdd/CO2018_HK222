@@ -1,12 +1,15 @@
- //#ifdef MM_PAGING
+
 /*
  * PAGING based Memory Management
  * Memory management unit mm/mm.c
  */
 
 #include "mm.h"
+#ifdef MM_PAGING
 #include <stdlib.h>
 #include <stdio.h>
+
+
 
 /* 
  * init_pte - Initialize PTE entry
@@ -134,7 +137,7 @@ int vmap_page_range(struct pcb_t *caller, // process call
 int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struct** frm_lst)
 {
   int pgit, fpn;
-  //struct framephy_struct *newfp_str;
+  struct framephy_struct *newfp_str;
 
   for(pgit = 0; pgit < req_pgnum; pgit++)
   {
@@ -143,7 +146,11 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
      // If a free frame is available in memory, map it to the page table entry
      uint32_t *pte = &caller->mm->pgd[pgit];
      pte_set_fpn(pte, fpn);
-
+     newfp_str = malloc(sizeof(struct framephy_struct));
+     newfp_str->fpn = fpn;
+     newfp_str->fp_next = *frm_lst;
+     *frm_lst = newfp_str;
+    
      
    } else {  // ERROR CODE of obtaining somes but not enough frames
      return -1;
@@ -365,4 +372,4 @@ int print_pgtbl(struct pcb_t *caller, uint32_t start, uint32_t end)
   return 0;
 }
 
-//#endif
+#endif
