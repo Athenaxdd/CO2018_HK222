@@ -99,7 +99,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
 
   int inc_sz = PAGING_PAGE_ALIGNSZ(size);
   
-  int old_sbrk ;
+  int old_sbrk = cur_vma->sbrk;
   
   /* TODO INCREASE THE LIMIT
    * inc_vma_limit(caller, vmaid, inc_sz)
@@ -110,16 +110,17 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   if(inc_limit_ret != 0){
     return -1;
   } 
-  else{
-    /*Successful increase limit */
-    old_sbrk = cur_vma->sbrk;
-    caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
-    caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
-
-    *alloc_addr = old_sbrk;
-    
-    return 0;
+  /*Successful increase limit */
+  
+  caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
+  caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
+  if(old_sbrk + size < cur_vma->vm_end){
+    struct vm_rg_struct *remain_rg = init_vm_rg(old_sbrk + size,cur_vma->vm_end);
+    enlist_vm_freerg_list(caller->mm, remain_rg);
   }
+  *alloc_addr = old_sbrk;
+  cur_vma->sbrk = cur_vma->vm_end;  
+  return 0;
 }
 
 /*__free - remove a region memory
@@ -171,10 +172,10 @@ int __free(struct pcb_t *caller, int vmaid, int rgid)
  */
 int pgalloc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 {
-  int *addr;
+  int addr;
 
   /* By default using vmaid = 0 */
-  return __alloc(proc, 0, reg_index, size, addr);
+  return __alloc(proc, 0, reg_index, size, &addr);
 }
 
 /*pgfree - PAGING-based free a region memory
@@ -430,11 +431,12 @@ int validate_overlap_vm_area(struct pcb_t *caller, int vmaid, int vmastart, int 
   struct vm_area_struct *vma = caller->mm->mmap;
 
   /* TODO validate the planned memory area is not overlapped */
-  while(vma != NULL)
-  {
-    if(vma->vm_start <= vmastart && vma->vm_end >= vmaend)
-      return -1;
-
+  while(vma != NULL){
+    if(vmaid == vma->vm_id){
+      if((vma->vm_start <= vmastart && vma->vm_end >= vmaend)||(vmaend > vma->vm_start && vmaend <= vma->vm_end)){
+        return -1;
+      }
+    }
     vma = vma->vm_next;
   }
   return 0;

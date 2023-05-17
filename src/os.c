@@ -54,8 +54,10 @@ static void * cpu_routine(void * args) {
 			/* No process is running, the we load new process from
 		 	* ready queue */
 			proc = get_proc();
+			
 			if (proc == NULL) {
                            next_slot(timer_id);
+						   
                            continue; /* First load failed. skip dummy load */
                         }
 		}else if (proc->pc == proc->code->size) {
@@ -93,6 +95,8 @@ static void * cpu_routine(void * args) {
 		run(proc);
 		time_left--;
 		next_slot(timer_id);
+		
+		
 	}
 	detach_event(timer_id);
 	pthread_exit(NULL);
@@ -126,8 +130,11 @@ static void * ld_routine(void * args) {
 #endif
 		printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
 			ld_processes.path[i], proc->pid, ld_processes.prio[i]);
+		
 		add_proc(proc);
+		
 		free(ld_processes.path[i]);
+		
 		i++;
 		next_slot(timer_id);
 	}
@@ -203,7 +210,7 @@ int main(int argc, char * argv[]) {
 	strcat(path, "input/");
 	strcat(path, argv[1]);
 	read_config(path);
-
+	
 	pthread_t * cpu = (pthread_t*)malloc(num_cpus * sizeof(pthread_t));
 	struct cpu_args * args =
 		(struct cpu_args*)malloc(sizeof(struct cpu_args) * num_cpus);
@@ -253,6 +260,7 @@ int main(int argc, char * argv[]) {
 #else
 	pthread_create(&ld, NULL, ld_routine, (void*)ld_event);
 #endif
+	
 	for (i = 0; i < num_cpus; i++) {
 		pthread_create(&cpu[i], NULL,
 			cpu_routine, (void*)&args[i]);
@@ -262,6 +270,7 @@ int main(int argc, char * argv[]) {
 	for (i = 0; i < num_cpus; i++) {
 		pthread_join(cpu[i], NULL);
 	}
+	
 	pthread_join(ld, NULL);
 
 	/* Stop timer */
