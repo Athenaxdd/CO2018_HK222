@@ -43,22 +43,41 @@ void init_scheduler(void) {
  *  State representation   prio = 0 .. MAX_PRIO, curr_slot = 0..(MAX_PRIO - prio)
  */
 struct pcb_t * get_mlq_proc(void) {
-	struct pcb_t * proc = NULL;
-	/*TODO: get a process from PRIORITY [ready_queue].
-	 * Remember to use lock to protect the queue.
-	 * */
-	int i;
-	for(i = 0; i < MAX_PRIO; i++){
-		pthread_mutex_lock(&queue_lock);
-		if(empty(&mlq_ready_queue[i]))
-			while(!empty(&run_queue))
-				enqueue(&mlq_ready_queue[i], dequeue(&run_queue));
-			
-		proc = dequeue(&mlq_ready_queue[i]);
-		pthread_mutex_unlock(&queue_lock);
-	}
-	return proc;	
+    struct pcb_t * proc = NULL;
+    /* TODO: get a process from PRIORITY [ready_queue].
+     * Remember to use lock to protect the queue.
+     */
+    int i;
+    for (i = 0; i < MAX_PRIO; i++) {
+        pthread_mutex_lock(&queue_lock);
+        if (!empty(&mlq_ready_queue[i])) {
+            proc = dequeue(&mlq_ready_queue[i]);
+            pthread_mutex_unlock(&queue_lock);
+            break;  // Found a process, break out of the loop
+        } else {
+            pthread_mutex_unlock(&queue_lock);
+        }
+    }
+    if (proc == NULL) {
+        // If no process was found in any priority level, move processes from the run queue to the highest priority level
+        pthread_mutex_lock(&queue_lock);
+        while (!empty(&run_queue)) {
+            proc = dequeue(&run_queue);
+            enqueue(&mlq_ready_queue[MAX_PRIO - 1], proc);
+        }
+        pthread_mutex_unlock(&queue_lock);
+        // Dequeue a process from the highest priority level
+        pthread_mutex_lock(&queue_lock);
+        if (!empty(&mlq_ready_queue[MAX_PRIO - 1])) {
+            proc = dequeue(&mlq_ready_queue[MAX_PRIO - 1]);
+        }
+        pthread_mutex_unlock(&queue_lock);
+    }
+    return proc;
 }
+
+
+
 
 void put_mlq_proc(struct pcb_t * proc) {
 	pthread_mutex_lock(&queue_lock);
@@ -85,19 +104,25 @@ void add_proc(struct pcb_t * proc) {
 }
 #else
 struct pcb_t * get_proc(void) {
-	struct pcb_t * proc = NULL;
-	/*TODO: get a process from [ready_queue].
-	 * Remember to use lock to protect the queue.
-	 * */
-	pthread_mutex_lock(&queue_lock);
-	if(empty(&ready_queue))
-		while(!empty(&run_queue))
-			enqueue(&ready_queue, dequeue(&run_queue));
-		
-	proc = dequeue(&ready_queue);
-	pthread_mutex_unlock(&queue_lock);
-	return proc;
+    struct pcb_t * proc = NULL;
+    /*TODO: get a process from [ready_queue].
+     * Remember to use lock to protect the queue.
+     * */
+    pthread_mutex_lock(&queue_lock);
+    if (empty(&ready_queue)) {
+        // Move all processes from the run queue to the ready queue
+        while (!empty(&run_queue)) {
+            proc = dequeue(&run_queue);
+            enqueue(&ready_queue, proc);
+        }
+    }
+    if (!empty(&ready_queue)) {
+        proc = dequeue(&ready_queue);
+    }
+    pthread_mutex_unlock(&queue_lock);
+    return proc;
 }
+
 
 void put_proc(struct pcb_t * proc) {
 	pthread_mutex_lock(&queue_lock);
