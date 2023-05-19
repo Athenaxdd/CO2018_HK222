@@ -1,4 +1,5 @@
 #include "os-mm.h"
+#include "mm.h"
 #ifdef MM_PAGING
 /*
  * PAGING based Memory Management
@@ -6,7 +7,6 @@
  */
 
 #include "string.h"
-#include "mm.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -79,49 +79,40 @@ struct vm_rg_struct *get_symrg_byid(struct mm_struct *mm, int rgid)
  */
 int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr)
 {
-  /*Allocate at the toproof */
+  /* Allocate at the top of the VM area */
   struct vm_rg_struct rgnode;
 
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0)
   {
     caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
     caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
-
     *alloc_addr = rgnode.rg_start;
-
     return 0;
   }
 
-  /* TODO get_free_vmrg_area FAILED handle the region management (Fig.6)*/
-
-  /*Attempt to increase limit to get space */
+  /* Failed to allocate contiguous memory. Attempt to increase limit to get space. */
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
 
   int inc_sz = PAGING_PAGE_ALIGNSZ(size);
-  
   int old_sbrk = cur_vma->sbrk;
-  
-  /* TODO INCREASE THE LIMIT
-   * inc_vma_limit(caller, vmaid, inc_sz)
-   */
-  
-  int inc_limit_ret = inc_vma_limit(caller, vmaid, inc_sz);
 
-  if(inc_limit_ret != 0){
-    return -1;
-  } 
-  /*Successful increase limit */
-  
+  int inc_limit_ret = inc_vma_limit(caller, vmaid, inc_sz);
+  if (inc_limit_ret != 0) {
+    return -1;  // Failed to increase limit, return error code
+  }
+
+  /* Successful increase limit */
   caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
   caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
-  if(old_sbrk + size < cur_vma->vm_end){
-    struct vm_rg_struct *remain_rg = init_vm_rg(old_sbrk + size,cur_vma->vm_end);
+  if (old_sbrk + size < cur_vma->vm_end) {
+    struct vm_rg_struct *remain_rg = init_vm_rg(old_sbrk + size, cur_vma->vm_end);
     enlist_vm_freerg_list(caller->mm, remain_rg);
   }
   *alloc_addr = old_sbrk;
-  cur_vma->sbrk = cur_vma->vm_end;  
+  cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
   return 0;
 }
+
 
 /*__free - remove a region memory
  *@caller: caller
@@ -134,36 +125,36 @@ int __free(struct pcb_t *caller, int vmaid, int rgid)
 {
   struct vm_rg_struct rgnode;
 
-  if(rgid < 0 || rgid > PAGING_MAX_SYMTBL_SZ)
+  if (rgid < 0 || rgid > PAGING_MAX_SYMTBL_SZ)
     return -1;
-
-  /* TODO: Manage the collect freed region to freerg_list */
 
   rgnode.rg_start = caller->mm->symrgtbl[rgid].rg_start;
   rgnode.rg_end = caller->mm->symrgtbl[rgid].rg_end;
 
-
-  /*enlist the obsoleted memory region */
+  /* Enlist the obsoleted memory region */
   enlist_vm_freerg_list(caller->mm, &rgnode);
-  /*clear the region in the symbol table*/
+
+  /* Clear the region in the symbol table */
   caller->mm->symrgtbl[rgid].rg_start = 0;
   caller->mm->symrgtbl[rgid].rg_end = 0;
-  /*merge adjacent free regions*/
+
+  /* Merge adjacent free regions */
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
-  struct vm_rg_struct *rg_s,*rg_e;
+  struct vm_rg_struct *rg_s, *rg_e;
   struct vm_rg_struct *free_list = cur_vma->vm_freerg_list;
-  for(rg_s = free_list; rg_s != NULL; rg_s = rg_s->rg_next)
-  {
+  for (rg_s = free_list; rg_s != NULL; rg_s = rg_s->rg_next) {
     rg_e = rg_s->rg_next;
-    if(rg_e != NULL && rg_s->rg_end == rg_e->rg_start){
+    while (rg_e != NULL && rg_s->rg_end == rg_e->rg_start) {
       rg_s->rg_end = rg_e->rg_end;
       rg_s->rg_next = rg_e->rg_next;
       free(rg_e);
+      rg_e = rg_s->rg_next;
     }
   }
-  
+
   return 0;
 }
+
 
 /*pgalloc - PAGING-based allocate a region memory
  *@proc:  Process executing the instruction
@@ -347,6 +338,7 @@ int __write(struct pcb_t *caller, int vmaid, int rgid, int offset, BYTE value)
 	  return -1;
 
   pg_setval(caller->mm, currg->rg_start + offset, value, caller);
+  
 
   return 0;
 }

@@ -162,10 +162,14 @@ int MEMPHY_dump(struct memphy_struct * mp)
     /*TODO dump memphy contnt mp->storage 
      *     for tracing the memory content
      */
+    //dump in bit present
     for(int i = 0; i< mp->maxsz; i++){
-      printf("%d ", mp->storage[i]);
+      if(mp->storage[i]){
+         printf("%08x\n ", mp->storage[i]);
+       
+      }
     }
-    printf("\n");
+    
     return 0;
 }
 

@@ -42,7 +42,6 @@ int init_pte(uint32_t *pte,
       SETVAL(*pte, swpoff, PAGING_PTE_SWPOFF_MASK, PAGING_PTE_SWPOFF_LOBIT);
     }
   }
-
   return 0;   
 }
 
@@ -88,42 +87,37 @@ int vmap_page_range(struct pcb_t *caller, // process call
            struct framephy_struct *frames,// list of the mapped frames
               struct vm_rg_struct *ret_rg)// return mapped region, the real mapped fp
 {                                         // no guarantee all given pages are mapped
-  //uint32_t * pte = malloc(sizeof(uint32_t));
+  uint32_t * pte = malloc(sizeof(uint32_t));
   struct framephy_struct *fpit = malloc(sizeof(struct framephy_struct));
-  //int  fpn;
+  int fpn;
   int pgit = 0;
   int pgn = PAGING_PGN(addr);
-
   ret_rg->rg_end = ret_rg->rg_start = addr; // at least the very first space is usable
-
-  fpit->fp_next = frames;
-
   /* TODO map range of frame to address space 
    *      [addr to addr + pgnum*PAGING_PAGESZ
    *      in page table caller->mm->pgd[]
    */
-  for (int i = 0; i < pgnum; i++) {
-    int fpn;
-    if (MEMPHY_get_freefp(caller->mram, &fpn) == 0) {
+  
+  for(pgit = pgnum - 1; pgit > 0; pgit++){
+    if(MEMPHY_get_freefp(caller->mram, &fpn) == 0){
       // If a free frame is available in memory, map it to the page table entry
-      uint32_t *pte = &caller->mm->pgd[pgn+i];
+      uint32_t *pt= &caller->mm->pgd[pgit];
+      pte = pt;
       pte_set_fpn(pte, fpn);
-
-      // Update the frame list and the mapped region
       fpit->fpn = fpn;
-      ret_rg->rg_end += PAGING_PAGESZ;
-      fpit = fpit->fp_next;
-    } else {
-      // If there is no free frame in memory, exit the loop
-      break;
+      fpit->fp_next = frames;
+      frames = fpit;
+      ret_rg->rg_end  = addr + pgit*PAGING_PAGESZ; 
+    } else{
+      //there is no free frame in memory
+      return -1;
     }
   }
-
    /* Tracking for later page replacement activities (if needed)
     * Enqueue new usage page */
-   enlist_pgn_node(&caller->mm->fifo_pgn, pgn+pgit);
-
-
+   for(pgit = 0; pgit < pgnum; pgit++){
+     enlist_pgn_node(&caller->mm->fifo_pgn, pgn+pgit);
+   }
   return 0;
 }
 
@@ -153,7 +147,12 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
     
      
    } else {  // ERROR CODE of obtaining somes but not enough frames
-     return -1;
+    // while(*frm_lst != NULL){
+    //   struct framephy_struct *temp = *frm_lst;
+    //   *frm_lst = (*frm_lst)->fp_next;
+    //   free(temp);
+    // }
+     return -3000;
    } 
  }
 
@@ -367,6 +366,7 @@ int print_pgtbl(struct pcb_t *caller, uint32_t start, uint32_t end)
   for(pgit = pgn_start; pgit < pgn_end; pgit++)
   {
      printf("%08ld: %08x\n", pgit * sizeof(uint32_t), caller->mm->pgd[pgit]);
+     
   }
 
   return 0;
