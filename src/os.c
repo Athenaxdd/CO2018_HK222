@@ -132,11 +132,10 @@ static void * ld_routine(void * args) {
 			ld_processes.path[i], proc->pid, ld_processes.prio[i]);
 		
 		add_proc(proc);
-		
 		free(ld_processes.path[i]);
-		
 		i++;
 		next_slot(timer_id);
+		
 	}
 	free(ld_processes.path);
 	free(ld_processes.start_time);

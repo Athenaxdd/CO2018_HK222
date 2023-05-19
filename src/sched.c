@@ -47,41 +47,30 @@ struct pcb_t * get_mlq_proc(void) {
     /* TODO: get a process from PRIORITY [ready_queue].
      * Remember to use lock to protect the queue.
      */
-    int i;
-    for (i = 0; i < MAX_PRIO; i++) {
+    int prio;
+    for(prio = 0; prio < MAX_PRIO; prio++) {
         pthread_mutex_lock(&queue_lock);
-        if (!empty(&mlq_ready_queue[i])) {
-            proc = dequeue(&mlq_ready_queue[i]);
-            pthread_mutex_unlock(&queue_lock);
-            break;  // Found a process, break out of the loop
-        } else {
-            pthread_mutex_unlock(&queue_lock);
+        if(empty(&mlq_ready_queue[prio])) {
+            while(!empty(&run_queue)){
+                proc = dequeue(&run_queue);
+                enqueue(&mlq_ready_queue[prio], proc);   
+            }
         }
-    }
-    if (proc == NULL) {
-        // If no process was found in any priority level, move processes from the run queue to the highest priority level
-        pthread_mutex_lock(&queue_lock);
-        while (!empty(&run_queue)) {
-            proc = dequeue(&run_queue);
-            enqueue(&mlq_ready_queue[MAX_PRIO - 1], proc);
+        if(!empty(&mlq_ready_queue[prio])) {
+            proc = dequeue(&mlq_ready_queue[prio]);
         }
         pthread_mutex_unlock(&queue_lock);
-        // Dequeue a process from the highest priority level
-        pthread_mutex_lock(&queue_lock);
-        if (!empty(&mlq_ready_queue[MAX_PRIO - 1])) {
-            proc = dequeue(&mlq_ready_queue[MAX_PRIO - 1]);
+        if (proc != NULL) {
+            break;
         }
-        pthread_mutex_unlock(&queue_lock);
     }
     return proc;
 }
 
 
-
-
 void put_mlq_proc(struct pcb_t * proc) {
 	pthread_mutex_lock(&queue_lock);
-	enqueue(&mlq_ready_queue[proc->prio], proc);
+	enqueue(&run_queue, proc);
 	pthread_mutex_unlock(&queue_lock);
 }
 
