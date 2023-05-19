@@ -1,0 +1,71 @@
+Time slot   0
+ld_routine
+	Loaded a process at input/proc/p0, PID: 1 PRIO: 0
+	CPU 0: Dispatched process  1
+Time slot   1
+Time slot   2
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+Time slot   3
+write region=1 offset=4 value=10
+print_pgtbl: 0 - 2048
+00000000: 80000001
+00000004: 00000000
+Time slot   4
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+write region=2 offset=0 value=20
+print_pgtbl: 0 - 2048
+00000000: 80000001
+00000004: 00000000
+0000000a
+ Time slot   5
+write region=3 offset=8 value=30
+print_pgtbl: 0 - 2048
+00000000: 80000001
+00000004: 00000000
+0000000a
+ 00000014
+ Time slot   6
+	Loaded a process at input/proc/p1, PID: 2 PRIO: 15
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+Time slot   7
+	Loaded a process at input/proc/p1, PID: 3 PRIO: 0
+Time slot   8
+	Loaded a process at input/proc/p1, PID: 4 PRIO: 0
+	CPU 0: Processed  1 has finished
+	CPU 0: Dispatched process  4
+Time slot   9
+Time slot  10
+	CPU 0: Put process  4 to run queue
+	CPU 0: Dispatched process  3
+Time slot  11
+Time slot  12
+	CPU 0: Put process  3 to run queue
+	CPU 0: Dispatched process  4
+Time slot  13
+Time slot  14
+	CPU 0: Put process  4 to run queue
+	CPU 0: Dispatched process  3
+Time slot  15
+Time slot  16
+	CPU 0: Put process  3 to run queue
+	CPU 0: Dispatched process  4
+Time slot  17
+	CPU 0: Processed  4 has finished
+	CPU 0: Dispatched process  3
+Time slot  18
+	CPU 0: Processed  3 has finished
+	CPU 0: Dispatched process  2
+Time slot  19
+Time slot  20
+	CPU 0: Put process  2 to run queue
+	CPU 0: Dispatched process  2
+Time slot  21
+Time slot  22
+	CPU 0: Put process  2 to run queue
+	CPU 0: Dispatched process  2
+Time slot  23
+	CPU 0: Processed  2 has finished
+	CPU 0 stopped
