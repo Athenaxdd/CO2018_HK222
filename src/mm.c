@@ -87,37 +87,43 @@ int vmap_page_range(struct pcb_t *caller, // process call
            struct framephy_struct *frames,// list of the mapped frames
               struct vm_rg_struct *ret_rg)// return mapped region, the real mapped fp
 {                                         // no guarantee all given pages are mapped
-  uint32_t * pte = malloc(sizeof(uint32_t));
+  //uint32_t * pte = malloc(sizeof(uint32_t));
   struct framephy_struct *fpit = malloc(sizeof(struct framephy_struct));
-  int fpn;
+  //int  fpn;
   int pgit = 0;
   int pgn = PAGING_PGN(addr);
+
   ret_rg->rg_end = ret_rg->rg_start = addr; // at least the very first space is usable
+
+  fpit->fp_next = frames;
+
   /* TODO map range of frame to address space 
    *      [addr to addr + pgnum*PAGING_PAGESZ
    *      in page table caller->mm->pgd[]
    */
-  
-  for(pgit = pgnum - 1; pgit > 0; pgit++){
-    if(MEMPHY_get_freefp(caller->mram, &fpn) == 0){
+  while (pgit < pgnum  && fpit != NULL) {
+    int fpn;
+    if (MEMPHY_get_freefp(caller->mram, &fpn) == 0) {
       // If a free frame is available in memory, map it to the page table entry
-      uint32_t *pt= &caller->mm->pgd[pgit];
-      pte = pt;
+         enlist_pgn_node(&caller->mm->fifo_pgn, pgn+pgit);
+
+      // Update the frame list and the mapped region
+      uint32_t *pte= &caller->mm->pgd[pgit];
       pte_set_fpn(pte, fpn);
       fpit->fpn = fpn;
-      fpit->fp_next = frames;
-      frames = fpit;
+      ret_rg->rg_start = addr;
       ret_rg->rg_end  = addr + pgit*PAGING_PAGESZ; 
-    } else{
-      //there is no free frame in memory
-      return -1;
+      fpit = fpit->fp_next;
+      pgit++;
+    } else {
+      // If there is no free frame in memory, exit the loop
+      break;
     }
   }
+
    /* Tracking for later page replacement activities (if needed)
     * Enqueue new usage page */
-   for(pgit = 0; pgit < pgnum; pgit++){
-     enlist_pgn_node(&caller->mm->fifo_pgn, pgn+pgit);
-   }
+
   return 0;
 }
 
@@ -182,6 +188,7 @@ int vm_map_ram(struct pcb_t *caller, int astart, int aend, int mapstart, int inc
    *duplicate control mechanism, keep it simple
    */
   ret_alloc = alloc_pages_range(caller, incpgnum, &frm_lst);
+  
 
   if (ret_alloc < 0 && ret_alloc != -3000)
     return -1;

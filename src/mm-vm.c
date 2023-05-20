@@ -201,18 +201,22 @@ int pg_getpage(struct mm_struct *mm, int pgn, int *fpn, struct pcb_t *caller)
 
     /* TODO: Play with your paging theory here */
     /* Find victim page */
-    find_victim_page(caller->mm, &vicpgn);
+    if(find_victim_page(caller->mm, &vicpgn) != 0){
+      return -1;
+    };
 
     /* Get free frame in MEMSWP */
-    MEMPHY_get_freefp(caller->active_mswp, &swpfpn);
-
+    if(MEMPHY_get_freefp(caller->active_mswp, &swpfpn) != 0){
+      return -1;
+    };
+    
     /* Do swap frame from MEMRAM to MEMSWP and vice versa*/
     /* Copy victim frame to swap */
-    __swap_cp_page(caller->mram, vicpgn, caller->active_mswp, swpfpn);
+    __swap_cp_page(caller->active_mswp, vicpgn, caller->active_mswp, swpfpn);
+    
     /* Copy target frame from swap to mem */
-    __swap_cp_page(caller->active_mswp, tgtfpn, caller->mram, vicpgn);
-
-
+    __swap_cp_page(caller->active_mswp, swpfpn, caller->mram, tgtfpn);
+    
     /* Update page table */
     pte_set_swap(&vicpte, tgtfpn, swpfpn);
     mm->pgd[vicpgn] = vicpte;
@@ -223,7 +227,7 @@ int pg_getpage(struct mm_struct *mm, int pgn, int *fpn, struct pcb_t *caller)
 
     enlist_pgn_node(&caller->mm->fifo_pgn,pgn);
   }
-
+  
   *fpn = PAGING_FPN(pte);
 
   return 0;
@@ -265,11 +269,12 @@ int pg_setval(struct mm_struct *mm, int addr, BYTE value, struct pcb_t *caller)
   int fpn;
 
   /* Get the page to MEMRAM, swap from MEMSWAP if needed */
-  if(pg_getpage(mm, pgn, &fpn, caller) != 0) 
+  if(pg_getpage(mm, pgn, &fpn, caller) != 0){ 
     return -1; /* invalid page access */
-
+  }
+  
   int phyaddr = (fpn << PAGING_ADDR_FPN_LOBIT) + off;
-
+  
   MEMPHY_write(caller->mram,phyaddr, value);
 
    return 0;
