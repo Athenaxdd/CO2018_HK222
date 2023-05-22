@@ -1,7 +1,7 @@
 1 6
-alloc 300 1
-alloc 200 2
-write 10 1 4
-read 1 4 2
-calc
-calc
+alloc 300 0
+alloc 100 1
+free 0
+alloc 100 2
+free 2
+free 1

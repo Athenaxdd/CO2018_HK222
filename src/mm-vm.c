@@ -123,35 +123,14 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
  */
 int __free(struct pcb_t *caller, int vmaid, int rgid)
 {
-  struct vm_rg_struct rgnode;
+  struct vm_rg_struct *rgnode;
 
   if (rgid < 0 || rgid > PAGING_MAX_SYMTBL_SZ)
     return -1;
 
-  rgnode.rg_start = caller->mm->symrgtbl[rgid].rg_start;
-  rgnode.rg_end = caller->mm->symrgtbl[rgid].rg_end;
-
-  /* Enlist the obsoleted memory region */
-  enlist_vm_freerg_list(caller->mm, &rgnode);
-
-  /* Clear the region in the symbol table */
-  caller->mm->symrgtbl[rgid].rg_start = 0;
-  caller->mm->symrgtbl[rgid].rg_end = 0;
-
-  /* Merge adjacent free regions */
-  struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
-  struct vm_rg_struct *rg_s, *rg_e;
-  struct vm_rg_struct *free_list = cur_vma->vm_freerg_list;
-  for (rg_s = free_list; rg_s != NULL; rg_s = rg_s->rg_next) {
-    rg_e = rg_s->rg_next;
-    while (rg_e != NULL && rg_s->rg_end == rg_e->rg_start) {
-      rg_s->rg_end = rg_e->rg_end;
-      rg_s->rg_next = rg_e->rg_next;
-      free(rg_e);
-      rg_e = rg_s->rg_next;
-    }
-  }
-
+  struct vm_rg_struct *temp = get_symrg_byid(caller->mm, rgid);
+  rgnode = init_vm_rg(temp->rg_start, temp->rg_end);
+  enlist_vm_freerg_list(caller->mm, rgnode);
   return 0;
 }
 
@@ -480,14 +459,17 @@ int find_victim_page(struct mm_struct *mm, int *retpgn)
   struct pgn_t *pg = mm->fifo_pgn;
 
   /* TODO: Implement the theorical mechanism to find the victim page */
-  if(pg){
-    *retpgn = pg->pgn;
-    mm->fifo_pgn = pg->pg_next;
-    free(pg);
-    return 0;
+  if(!pg){
+    return -1;
   }
-  //If there is no pages in the FIFO list, return -1
-  return -1;
+  while(pg->pg_next->pg_next != NULL){
+    pg = pg->pg_next;
+  }
+  *retpgn = pg->pg_next->pgn;
+  mm->fifo_pgn = pg;
+  pg = pg->pg_next;
+  free(pg);
+  return 0;
 }
 
 /*get_free_vmrg_area - get a free vm region
