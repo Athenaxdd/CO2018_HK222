@@ -1,8 +1,8 @@
 #ifndef OSCFG_H
 #define OSCFG_H
 
-#define MLQ_SCHED 131 /* Scheduler number = max priority */
-#define MAX_PRIO 131 /* Maximum priority */
+#define MLQ_SCHED 5 /* Scheduler number = max priority */
+#define MAX_PRIO 5 /* Maximum priority */
 
 #define MM_PAGING
 //#define MM_FIXED_MEMSZ 
