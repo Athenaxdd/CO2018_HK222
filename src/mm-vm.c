@@ -468,7 +468,6 @@ int find_victim_page(struct mm_struct *mm, int *retpgn)
   *retpgn = pg->pg_next->pgn;
   mm->fifo_pgn = pg;
   pg = pg->pg_next;
-  free(pg);
   return 0;
 }
 
