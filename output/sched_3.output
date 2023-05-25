@@ -1,99 +1,99 @@
 Time slot   0
 ld_routine
 	Loaded a process at input/proc/s2, PID: 1 PRIO: 4
+	CPU 0: Dispatched process  1
 Time slot   1
-	CPU 2: Dispatched process  1
 Time slot   2
 Time slot   3
-	CPU 2: Put process  1 to run queue
-	CPU 2: Dispatched process  1
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
 Time slot   4
-Time slot   5
 	Loaded a process at input/proc/s1, PID: 2 PRIO: 9
-	CPU 1: Dispatched process  2
+	CPU 2: Dispatched process  2
+Time slot   5
 Time slot   6
-	CPU 2: Put process  1 to run queue
-	CPU 2: Dispatched process  1
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
 Time slot   7
 Time slot   8
-	CPU 1: Put process  2 to run queue
 	Loaded a process at input/proc/s3, PID: 3 PRIO: 20
-	CPU 1: Dispatched process  2
+	CPU 2: Put process  2 to run queue
+	CPU 2: Dispatched process  2
 Time slot   9
-	CPU 0: Dispatched process  3
-	CPU 2: Put process  1 to run queue
-	CPU 2: Dispatched process  1
+	CPU 1: Dispatched process  3
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
 Time slot  10
 	Loaded a process at input/proc/s4, PID: 4 PRIO: 50
 Time slot  11
-	CPU 1: Put process  2 to run queue
-	CPU 1: Dispatched process  2
+	CPU 2: Put process  2 to run queue
+	CPU 2: Dispatched process  2
+	CPU 2: Processed  2 has finished
+	CPU 2: Dispatched process  4
 Time slot  12
-	CPU 1: Processed  2 has finished
-	CPU 1: Dispatched process  4
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
-	CPU 2: Put process  1 to run queue
-	CPU 2: Dispatched process  1
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+	CPU 1: Put process  3 to run queue
+	CPU 1: Dispatched process  3
 Time slot  13
-	CPU 2: Processed  1 has finished
-	CPU 2 stopped
+	CPU 0: Processed  1 has finished
+	CPU 0 stopped
 Time slot  14
-	CPU 1: Put process  4 to run queue
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
-	CPU 1: Dispatched process  4
 Time slot  15
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
+	CPU 1: Put process  3 to run queue
+	CPU 1: Dispatched process  3
 Time slot  16
 Time slot  17
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  18
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
+	CPU 1: Put process  3 to run queue
+	CPU 1: Dispatched process  3
 Time slot  19
 Time slot  20
 Time slot  21
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
+	CPU 1: Put process  3 to run queue
+	CPU 1: Dispatched process  3
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  22
 Time slot  23
 Time slot  24
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
-	CPU 0: Put process  3 to run queue
-	CPU 0: Dispatched process  3
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
+	CPU 1: Put process  3 to run queue
+	CPU 1: Dispatched process  3
 Time slot  25
 Time slot  26
-	CPU 0: Processed  3 has finished
-	CPU 0 stopped
+	CPU 1: Processed  3 has finished
+	CPU 1 stopped
 Time slot  27
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  28
 Time slot  29
 Time slot  30
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  31
 Time slot  32
 Time slot  33
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  34
 Time slot  35
 Time slot  36
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  37
 Time slot  38
 Time slot  39
-	CPU 1: Put process  4 to run queue
-	CPU 1: Dispatched process  4
+	CPU 2: Put process  4 to run queue
+	CPU 2: Dispatched process  4
 Time slot  40
 Time slot  41
-	CPU 1: Processed  4 has finished
-	CPU 1 stopped
+	CPU 2: Processed  4 has finished
+	CPU 2 stopped
 
