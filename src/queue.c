@@ -36,6 +36,14 @@ struct pcb_t * dequeue(struct queue_t * q) {
     if (empty(q)) {
         return NULL; // Return NULL if the queue is empty
     }
+#ifdef MLQ_SCHED
+	struct pcb_t *ret = q->proc[0];
+        for (int i = 0; i < (q->size - 1); i++)
+                q->proc[i] = q->proc[i + 1];
+        q->proc[q->size - 1] = NULL;
+        q->size--;
+        return ret;
+#else
     // Find the process with the highest priority
     int i, max_idx = 0;
     for (i = 1; i < q->size; i++) {
