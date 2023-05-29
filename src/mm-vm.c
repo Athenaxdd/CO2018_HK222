@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static pthread_mutex_t vmlock;
 /*enlist_vm_freerg_list - add new rg to freerg_list
  *@mm: memory region
  *@rg_elmt: new region
@@ -80,6 +81,7 @@ struct vm_rg_struct *get_symrg_byid(struct mm_struct *mm, int rgid)
 int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr)
 {
   /* Allocate at the top of the VM area */
+  pthread_mutex_lock(&vmlock);
   struct vm_rg_struct rgnode;
 
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0)
@@ -87,6 +89,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
     caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
     *alloc_addr = rgnode.rg_start;
+	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
 
@@ -110,6 +113,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   }
   *alloc_addr = old_sbrk;
   cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
+	pthread_mutex_unlock(&vmlock);
   return 0;
 }
 
